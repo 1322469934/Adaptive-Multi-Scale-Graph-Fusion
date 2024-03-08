@@ -1,0 +1,55 @@
+import torch
+from torch import nn, optim
+
+# Assuming F' (F_prime) is the enhanced feature matrix with shape [n_samples, n_features]
+# and y is the true labels tensor with shape [n_samples]
+
+class SoftmaxRegression(nn.Module):
+    def __init__(self, n_features, n_classes):
+        super(SoftmaxRegression, self).__init__()
+        # Define the parameters for softmax regression (weight matrix)
+        self.linear = nn.Linear(n_features, n_classes)
+
+    def forward(self, x):
+        # The softmax function is applied in the loss function
+        return self.linear(x)
+
+# Number of features and classes
+n_features = F_prime.shape[1]
+n_classes = len(torch.unique(y))  # Replace with actual number of classes if known
+
+# Initialize the softmax regression model
+model = SoftmaxRegression(n_features, n_classes)
+
+# Loss function
+# PyTorch's CrossEntropyLoss combines nn.LogSoftmax() and nn.NLLLoss() in one single class.
+loss_function = nn.CrossEntropyLoss()
+
+# Regularization parameter
+lambda_reg = 0.01
+
+# Optimizer
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+n_epochs = 100
+for epoch in range(n_epochs):
+    # Zero the gradients
+    optimizer.zero_grad()
+    
+    # Forward pass
+    outputs = model(F_prime)
+    
+    # Compute the loss
+    loss = loss_function(outputs, y)
+    
+    # Add L1 regularization
+    l1_norm = sum(p.abs().sum() for p in model.parameters())
+    loss = loss + lambda_reg * l1_norm
+    
+    # Backward pass and optimize
+    loss.backward()
+    optimizer.step()
+
+    if epoch % 10 == 0:  # Print loss every 10 epochs
+        print(f'Epoch [{epoch+1}/{n_epochs}], Loss: {loss.item():.4f}')
